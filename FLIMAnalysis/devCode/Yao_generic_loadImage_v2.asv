@@ -1,0 +1,70 @@
+function Yao_generic_loadImage_v2(numImg,cond)
+
+% cond can be empty or 'fast'
+
+
+if ~exist('cond','var')
+    cond = [];
+end
+% if isempty(cond)
+%     cond = '
+% end
+
+
+
+
+global spc
+
+
+
+% Tell spc_main to load new image
+spc_openFiles(numImg,[])
+
+
+
+
+
+onesMatrix = ones(...
+    size(spc.projects{1},1),...
+    size(spc.projects{1},2) ); % put ones to the size of the image.
+  
+    
+    img_projects =...
+        stateYao.images.origData.projects{numCycle}(:,:,iImg);
+    
+    val = Yao_calc_Photon(img_projects,onesMatrix );
+    
+    
+    
+    
+    
+    
+
+loadExtra = 1;
+if ~isempty(cond)
+if strcmp(lower(cond),'fast')
+    loadExtra = 0;
+end
+end
+
+
+
+
+% Make changes to Tau and upper/lower limits
+betahat=spc_fitexp2prfGY(1);
+
+% Redraw lifetime map
+spc_adjustTauOffset(1)
+
+
+    
+if loadExtra    
+    spc.switchess{1,1}.lifeLimitUpper =...
+        spc.fits{1,1}.avgTau -0.25;
+    spc.switchess{1,1}.lifeLimitLower =...
+        spc.fits{1,1}.avgTau +0.25;
+    
+    
+    
+    spc_redrawSetting
+end
