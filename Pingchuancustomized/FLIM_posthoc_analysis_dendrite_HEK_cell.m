@@ -12,7 +12,7 @@ end
 
 %% extract the information of when epochs start, in the form of number of acquisition
 
-Epochnum=Epochnumbers([gui.gy.filename.base,'.xlsx']); % customerized function 'Epochnumbers'
+% Epochnum=Epochnumbers([gui.gy.filename.base,'.xlsx']); % customerized function 'Epochnumbers'
 EpochStartTime=[];
 EpochStartAcq=[];
 AcqTime=stateYao.AcqTime-stateYao.AcqTime(1); % absolute time to relative time
