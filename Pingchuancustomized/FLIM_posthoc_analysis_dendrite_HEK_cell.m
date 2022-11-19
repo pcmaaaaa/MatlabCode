@@ -12,7 +12,7 @@ end
 
 %% extract the information of when epochs start, in the form of number of acquisition
 
-% Epochnum=Epochnumbers([gui.gy.filename.base,'.xlsx']); % customerized function 'Epochnumbers'
+Epochnum=Epochnumbers([gui.gy.filename.base,'.xlsx']); % customerized function 'Epochnumbers'
 EpochStartTime=[];
 EpochStartAcq=[];
 AcqTime=stateYao.AcqTime-stateYao.AcqTime(1); % absolute time to relative time
@@ -21,6 +21,9 @@ AcqTime=stateYao.AcqTime-stateYao.AcqTime(1); % absolute time to relative time
 % time and which row should be the time when epoch changes for each cycle
 % position.
 for i=1:size(Epochnum,2)
+    if Epochnum(i) < min(min(stateYao.CyclePositions))
+        Epochnum(i) = min(min(stateYao.CyclePositions));
+    end
     a=find(stateYao.CyclePositions==Epochnum(i));
     [m,n]=find(stateYao.CyclePositions==Epochnum(i));
     EpochStartTime(i)=AcqTime(a);
