@@ -1,12 +1,12 @@
 function spc_fitPostCalcs(chan)
 % multiFLIM: call this AFTER updating the global fits{}.range fits{}.betaN
 
-global spc PeakGeneralization PostPeakChannels BackGroundCorrection backcorr PeakChannelSet % FixPeakChannel peak_point_define
+global spc PeakGeneralization % FixPeakChannel peak_point_define
 nsPerPoint=spc.datainfo.psPerUnit/1000;
 
 % scaled beta0 for display values (but no need to redisplay or reload global; 
 % this was done by spc_betaIntoGlobal)
-[beta0, range]=spc_fitParamsFromGlobal(chan);
+[beta0 range]=spc_fitParamsFromGlobal(chan);
 if findstr('prf',spc.fits{chan}.lastFitFunction)
     % beta6 is scatter
     sbeta0=beta0(:).*[1 nsPerPoint 1 nsPerPoint nsPerPoint 1]';
@@ -60,45 +60,28 @@ nsRange=range*nsPerPoint;
 %         channels after the peak. To call this part, before running the
 %         FLP analysis, FixPeakChannel and peak_point_define needs to be
 %         defined.
-% add background correction term
+if PeakGeneralization == 0;
+    fit_start = spc.fits{chan}.fitstart/nsPerPoint;
+    fit_end = spc.fits{chan}.fitend/nsPerPoint;
+    n_channels = fit_end - fit_start +1;
 
-    if BackGroundCorrection == 1
-        spc.lifetimes{chan} = spc.lifetimes{chan} - backcorr;
-    end
+    lft_points=[1:1:n_channels]*nsPerPoint;
+%         peak_point=find(spc.lifetimes{chan}==max(spc.lifetimes{chan}));
+    empirical_lifetimes=spc.lifetimes{chan}(fit_start:fit_end);
+    spc.fits{chan}.EmpTauTrunc=sum(empirical_lifetimes.*lft_points')/sum(empirical_lifetimes); % calculation of empirical lifetime, Pingchuan added 06.28.21
+end
 
+if PeakGeneralization == 1;
+    peak_channel = floor(mean(find(spc.lifetimes{chan} == max(spc.lifetimes{chan}))));
+    fit_start = peak_channel;
+    fit_end = peak_channel;
+    n_channels = fit_end - fit_start +1;
 
-
-    if PeakGeneralization == 0
-        fit_start = spc.fits{chan}.fitstart/nsPerPoint;
-        fit_end = spc.fits{chan}.fitend/nsPerPoint;
-        n_channels = fit_end - fit_start +1;
-    
-        lft_points=[0.5:1:n_channels-0.5]*nsPerPoint;
-    %         peak_point=find(spc.lifetimes{chan}==max(spc.lifetimes{chan}));
-        empirical_lifetimes=spc.lifetimes{chan}(fit_start:fit_end);
-        spc.fits{chan}.EmpTauTrunc=sum(empirical_lifetimes.*lft_points')/sum(empirical_lifetimes); % calculation of empirical lifetime, Pingchuan added 06.28.21
-    end
-    
-    if PeakGeneralization == 1
-        peak_channel = floor(mean(find(spc.lifetimes{chan} == max(spc.lifetimes{chan}))));
-        fit_start = peak_channel;
-        fit_end = peak_channel + PostPeakChannels -1;
-    
-        lft_points=[0.5:1:PostPeakChannels-0.5]*nsPerPoint;
-    %         peak_point=find(spc.lifetimes{chan}==max(spc.lifetimes{chan}));
-        empirical_lifetimes=spc.lifetimes{chan}(fit_start:fit_end);
-        spc.fits{chan}.EmpTauTrunc=sum(empirical_lifetimes.*lft_points')/sum(empirical_lifetimes); % calculation of empirical lifetime generalized by peak channels, Pingchuan added 04.12.23
-    end
-
-    if PeakGeneralization == 2
-        fit_start = PeakChannelSet;
-        fit_end = PeakChannelSet + PostPeakChannels -1;
-    
-        lft_points=[0.5:1:PostPeakChannels-0.5]*nsPerPoint;
-    %         peak_point=find(spc.lifetimes{chan}==max(spc.lifetimes{chan}));
-        empirical_lifetimes=spc.lifetimes{chan}(fit_start:fit_end);
-        spc.fits{chan}.EmpTauTrunc=sum(empirical_lifetimes.*lft_points')/sum(empirical_lifetimes); % calculation of empirical lifetime generalized by peak channels, Pingchuan added 04.12.23
-    end
+    lft_points=[1:1:n_channels]*nsPerPoint;
+%         peak_point=find(spc.lifetimes{chan}==max(spc.lifetimes{chan}));
+    empirical_lifetimes=spc.lifetimes{chan}(fit_start:fit_end);
+    spc.fits{chan}.EmpTauTrunc=sum(empirical_lifetimes.*lft_points')/sum(empirical_lifetimes); % calculation of empirical lifetime, Pingchuan added 06.28.21
+end
 
 
 

@@ -10,6 +10,8 @@ function spc_readPageFLIM
 
 global state spc
 
+spc.SliceTime = {};
+
 %stop(state.spc.acq.mtSingle);
 for m=state.spc.acq.modulesInUse
     FLIM_StopMeasurement(m);
@@ -81,6 +83,7 @@ for m=state.spc.acq.modulesInUse
                 % if there's more than one slice, keep an array of them
                 % the zSliceCounter starts at 0
                 spc.imageModSlices{chan,state.internal.zSliceCounter+1}=imageF;
+                spc.SliceTime{state.internal.zSliceCounter+1} = clock;
                 if state.internal.zSliceCounter==0
                     spc.imageMods{chan}=imageF;
                     spc.projects{chan}=reshape(sum(spc.imageMods{chan}, 1), scan_size_y, scan_size_x);

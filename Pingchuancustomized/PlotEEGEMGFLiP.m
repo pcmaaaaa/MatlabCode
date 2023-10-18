@@ -1,4 +1,4 @@
-function out=PlotEEGEMGFLiP(rawdat_dir, mouse, fileprefix, filepostfix, acqn, frequency, constant)
+function out=PlotEEGEMGFLiP(rawdat_dir, mouse, fileprefix, filepostfix, acqn, frequency, constant, FigureVisible)
 
 % Written by Yao, 4/5/2021
 % I ran it under 2021a. Does not work with 2014 or 2012.
@@ -30,7 +30,7 @@ ScoringData=readNPY(scoring_python);
 ScoringData=ScoringData'; % Pingchuan changed, based on the way we name the npy sleep scoring file. 11.19.2021.
 
 % Create figure
-figure1 = figure;
+figure1 = figure('Visible',FigureVisible);
 figure1.Position=[10 10 800 1300];
 
 % load EEG/EMG data, scale them correctly and convert the scale to
@@ -177,8 +177,8 @@ annotation(figure1,'textbox',...
 %save everything
 figurefile=sprintf('%s_acqn%d', fileprefix, acqn);
 figurepngfile=[fileprefix,'_acqn_',num2str(acqn),'.png'];
-savefig(figure1, figurefile);
+% savefig(figure1, figurefile);
 saveas(figure1,figurepngfile);
 
 Summaryfile=sprintf('%s_acqn%d_summary', fileprefix, acqn);
-save(Summaryfile, 'ScaledEEGEMG', 'ScoringData', 'ScoringHeatMap');
+% save(Summaryfile, 'ScaledEEGEMG', 'ScoringData', 'ScoringHeatMap');

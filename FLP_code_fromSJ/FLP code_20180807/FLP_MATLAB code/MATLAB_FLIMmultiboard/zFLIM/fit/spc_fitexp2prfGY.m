@@ -35,9 +35,11 @@ spc.fit.failedFit=0; % initialize to not-failed
 % for the scatter parameter (6), use a 3-transform (sinusoid 0-10000)
 betahat = spc_nlinfitGY(x, lifetime, @spc_exp2prfGY, beta0, floats, [0 1 0 1 0 3]);
 fit = spc_exp2prfGY(betahat, x);
+% fit = spc_exp2prfGY_PM202306(betahat, x);
 if spc.fit.failedFit==0
     % calculate the fraction of photons from SHG/scatter term
     betahat2=betahat;  betahat2(6)=0; fit2 = spc_exp2prfGY(betahat2,x);
+%     betahat2=betahat;  betahat2(6)=0; fit2 = spc_exp2prfGY_PM202306(betahat2,x);
     spc.fits{chan}.frSHG = 1-(sum(fit2)/sum(fit));
     disp(['fraction of photons from SHG: ' num2str(spc.fits{chan}.frSHG)]);
     

@@ -15,18 +15,9 @@ if flag % recalc the projections
       if bitget(state.spc.FLIMchoices(chan),3) % needs to be calculated
           spc_calcSpecialChannel(chan);
       else
-          if spc.datainfo.numberOfZSlices == 1
-              spc.projects{chan} = reshape(sum(spc.imageMods{chan}, 1), spc.SPCdata.scan_size_x, spc.SPCdata.scan_size_y); %swapped x and y (gy 201201)
-              % null this out to start, for normal channels
-              spc.fits{chan}.dependentChan=[];
-          elseif spc.datainfo.numberOfZSlices > 1
-              spc.projects_pooled{chan} = reshape(sum(spc.imageMods{chan}, 1), spc.SPCdata.scan_size_x, spc.SPCdata.scan_size_y);
-              for i_slice = 1:spc.datainfo.numberOfZSlices
-                  spc.projects{chan, i_slice} = reshape(sum(spc.imageModSlices{chan, i_slice}, 1), spc.SPCdata.scan_size_x, spc.SPCdata.scan_size_y);
-                  spc.fits{chan, i_slice}.dependentChan=[];
-              end
-          end
-
+          spc.projects{chan} = reshape(sum(spc.imageMods{chan}, 1), spc.SPCdata.scan_size_x, spc.SPCdata.scan_size_y); %swapped x and y (gy 201201)
+          % null this out to start, for normal channels
+          spc.fits{chan}.dependentChan=[];
       end
 %       if spc.SPCdata.line_compression > 1
 %           aa = 1/spc.SPCdata.line_compression;

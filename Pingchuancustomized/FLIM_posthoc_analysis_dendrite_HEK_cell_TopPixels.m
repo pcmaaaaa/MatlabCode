@@ -45,11 +45,11 @@ lft_baseline_decrease_all=[];
 for i=1:i_cycleposition
     lft=[];
     lft_baseline=[];
-    num_roi=size(stateYao.Results.spc_calculateROIvals.LifetimeMap{i}{1},2);
+    num_roi=size(stateYao.Results.spc_calculateROIvals.Lifetime_TopPixels{i}{1},2);
     roi=1;
     for j=1:num_roi
         for k=1:nnz(stateYao.AcqTime(:,i))
-            lft(k,roi)=stateYao.Results.spc_calculateROIvals.LifetimeMap{i}{k}(j);
+            lft(k,roi)=stateYao.Results.spc_calculateROIvals.Lifetime_TopPixels{i}{k}(j);
         end
         roi=roi+1;
     end
@@ -86,11 +86,11 @@ intensity_baseline_decrease_all=[];
 for i=1:i_cycleposition
     intensity=[];
     intensity_baseline=[];
-    num_roi=size(stateYao.Results.spc_calculateROIvals.Projection{i}{1},2);
+    num_roi=size(stateYao.Results.spc_calculateROIvals.Projection_TopPixels{i}{1},2);
     roi=1;
     for j=1:num_roi
         for k=1:1:nnz(stateYao.AcqTime(:,i))
-            intensity(k,roi)=stateYao.Results.spc_calculateROIvals.Projection{i}{k}(j);
+            intensity(k,roi)=stateYao.Results.spc_calculateROIvals.Projection_TopPixels{i}{k}(j);
         end
         roi=roi+1;
     end

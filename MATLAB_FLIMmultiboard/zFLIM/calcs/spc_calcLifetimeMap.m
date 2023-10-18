@@ -37,43 +37,114 @@ end
 
 % why do we need to recalculate the projection map here??
 % project = reshape(sum(spc.imageMods{chan}, 1),spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
-
-% get the lifetime for all photons in all pixels
-spc.lifetimeAlls{chan} = reshape(sum(sum(spc.imageMods{chan}, 2), 3), spc.size(1), 1);
-
-% find the position of the maximum
-[~, pos_max] = max(spc.lifetimeAlls{chan}(range(1):1:range(2)));
-pos_max = pos_max+range(1)-1; % and reference it to the full range
-
-% GY: integrate (N(t)*t), ultimately to get mean lifetime
-x_project = 1:length(range(1):range(2));  % T (but unscaled), using the first point as t=1 (unscaled)
-x_project2 = repmat(x_project, [1,spc.SPCdata.scan_size_x*spc.SPCdata.scan_size_y]);
-x_project2 = reshape(x_project2, length(x_project), spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
-sumX_project = spc.imageMods{chan}(range(1):range(2),:,:).*x_project2;
-sumX_project = sum(sumX_project, 1);
-
-% GY: now calculate Ntotal for each pixel
-sum_project = sum(spc.imageMods{chan}(range(1):range(2),:,:), 1);
-sum_project = reshape(sum_project, spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x); 
-
-spc.lifetimeMaps{chan} = zeros(spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
-
-% GY: make a mask to exclude pixels with no photons
-bw = (sum_project > 0);
-
-% GY: calculate sum(N(t)*t)/Ntotal, scale according to time, and subtract
-% the Figure Offset value from the GUI
-spc.lifetimeMaps{chan}(bw) = (sumX_project(bw)./sum_project(bw))*nsPerPoint-pos_max2;
-if fixedoffset==1
-    spc.lifetimeMaps{chan}(bw) = (sumX_project(bw)./sum_project(bw))*nsPerPoint-offset;
+if spc.datainfo.numberOfZSlices == 1
+    % get the lifetime for all photons in all pixels
+    spc.lifetimeAlls{chan} = reshape(sum(sum(spc.imageMods{chan}, 2), 3), spc.size(1), 1);
+    
+    % find the position of the maximum
+    [~, pos_max] = max(spc.lifetimeAlls{chan}(range(1):1:range(2)));
+    pos_max = pos_max+range(1)-1; % and reference it to the full range
+    
+    % GY: integrate (N(t)*t), ultimately to get mean lifetime
+    x_project = 1:length(range(1):range(2));  % T (but unscaled), using the first point as t=1 (unscaled)
+    x_project2 = repmat(x_project, [1,spc.SPCdata.scan_size_x*spc.SPCdata.scan_size_y]);
+    x_project2 = reshape(x_project2, length(x_project), spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
+    sumX_project = spc.imageMods{chan}(range(1):range(2),:,:).*x_project2;
+    sumX_project = sum(sumX_project, 1);
+    
+    % GY: now calculate Ntotal for each pixel
+    sum_project = sum(spc.imageMods{chan}(range(1):range(2),:,:), 1);
+    sum_project = reshape(sum_project, spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x); 
+    
+    spc.lifetimeMaps{chan} = zeros(spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
+    
+    % GY: make a mask to exclude pixels with no photons
+    bw = (sum_project > 0);
+    
+    % GY: calculate sum(N(t)*t)/Ntotal, scale according to time, and subtract
+    % the Figure Offset value from the GUI
+    spc.lifetimeMaps{chan}(bw) = (sumX_project(bw)./sum_project(bw))*nsPerPoint-pos_max2;
+    if fixedoffset==1
+        spc.lifetimeMaps{chan}(bw) = (sumX_project(bw)./sum_project(bw))*nsPerPoint-offset;
+    end
+    
+    if spc.SPCdata.line_compression > 1
+        aa = 1/spc.SPCdata.line_compression;
+        [yi, xi] = meshgrid(aa:aa:spc.SPCdata.scan_size_x, aa:aa:spc.SPCdata.scan_size_y);
+        spc.lifetimeMaps{chan} = interp2(spc.lifetimeMaps{chan}, yi, xi); 
+        spc.lifetimeMaps{chan}(isnan(spc.lifetimeMaps{chan})) = 0;
+    end
+elseif spc.datainfo.numberOfZSlices > 1
+     % get the lifetime for all photons in all pixels
+    spc.lifetimeAlls_pooled{chan} = reshape(sum(sum(spc.imageMods{chan}, 2), 3), spc.size(1), 1);
+    
+    % find the position of the maximum
+    [~, pos_max] = max(spc.lifetimeAlls_pooled{chan}(range(1):1:range(2)));
+    pos_max = pos_max+range(1)-1; % and reference it to the full range
+    
+    % GY: integrate (N(t)*t), ultimately to get mean lifetime
+    x_project = 1:length(range(1):range(2));  % T (but unscaled), using the first point as t=1 (unscaled)
+    x_project2 = repmat(x_project, [1,spc.SPCdata.scan_size_x*spc.SPCdata.scan_size_y]);
+    x_project2 = reshape(x_project2, length(x_project), spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
+    sumX_project = spc.imageMods{chan}(range(1):range(2),:,:).*x_project2;
+    sumX_project = sum(sumX_project, 1);
+    
+    % GY: now calculate Ntotal for each pixel
+    sum_project = sum(spc.imageMods{chan}(range(1):range(2),:,:), 1);
+    sum_project = reshape(sum_project, spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x); 
+    
+    spc.lifetimeMaps_pooled{chan} = zeros(spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
+    
+    % GY: make a mask to exclude pixels with no photons
+    bw = (sum_project > 0);
+    
+    % GY: calculate sum(N(t)*t)/Ntotal, scale according to time, and subtract
+    % the Figure Offset value from the GUI
+    spc.lifetimeMaps_pooled{chan}(bw) = (sumX_project(bw)./sum_project(bw))*nsPerPoint-pos_max2;
+    if fixedoffset==1
+        spc.lifetimeMaps_pooled{chan}(bw) = (sumX_project(bw)./sum_project(bw))*nsPerPoint-offset;
+    end
+    for i_slice = 1:spc.datainfo.numberOfZSlices
+        spc.lifetimeAlls{chan, i_slice} = reshape(sum(sum(spc.imageModSlices{chan, i_slice}, 2), 3), spc.size(1), 1);
+    
+        % find the position of the maximum
+        [~, pos_max] = max(spc.lifetimeAlls{chan, i_slice}(range(1):1:range(2)));
+        pos_max = pos_max+range(1)-1; % and reference it to the full range
+        
+        % GY: integrate (N(t)*t), ultimately to get mean lifetime
+        x_project = 1:length(range(1):range(2));  % T (but unscaled), using the first point as t=1 (unscaled)
+        x_project2 = repmat(x_project, [1,spc.SPCdata.scan_size_x*spc.SPCdata.scan_size_y]);
+        x_project2 = reshape(x_project2, length(x_project), spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
+        sumX_project = spc.imageModSlices{chan, i_slice}(range(1):range(2),:,:).*x_project2;
+        sumX_project = sum(sumX_project, 1);
+        
+        % GY: now calculate Ntotal for each pixel
+        sum_project = sum(spc.imageModSlices{chan, i_slice}(range(1):range(2),:,:), 1);
+        sum_project = reshape(sum_project, spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x); 
+        
+        spc.lifetimeMaps{chan, i_slice} = zeros(spc.SPCdata.scan_size_y, spc.SPCdata.scan_size_x);
+        
+        % GY: make a mask to exclude pixels with no photons
+        bw = (sum_project > 0);
+        
+        % GY: calculate sum(N(t)*t)/Ntotal, scale according to time, and subtract
+        % the Figure Offset value from the GUI
+        spc.lifetimeMaps{chan, i_slice}(bw) = (sumX_project(bw)./sum_project(bw))*nsPerPoint-pos_max2;
+        if fixedoffset==1
+            spc.lifetimeMaps{chan, i_slice}(bw) = (sumX_project(bw)./sum_project(bw))*nsPerPoint-offset;
+        end
+        
+        if spc.SPCdata.line_compression > 1
+            aa = 1/spc.SPCdata.line_compression;
+            [yi, xi] = meshgrid(aa:aa:spc.SPCdata.scan_size_x, aa:aa:spc.SPCdata.scan_size_y);
+            spc.lifetimeMaps{chan, i_slice} = interp2(spc.lifetimeMaps{chan, i_slice}, yi, xi); 
+            spc.lifetimeMaps{chan, i_slice}(isnan(spc.lifetimeMaps{chan, i_slice})) = 0;
+        end
+    end
 end
 
-if spc.SPCdata.line_compression > 1
-    aa = 1/spc.SPCdata.line_compression;
-    [yi, xi] = meshgrid(aa:aa:spc.SPCdata.scan_size_x, aa:aa:spc.SPCdata.scan_size_y);
-    spc.lifetimeMaps{chan} = interp2(spc.lifetimeMaps{chan}, yi, xi); 
-    spc.lifetimeMaps{chan}(isnan(spc.lifetimeMaps{chan})) = 0;
-end
+
+
 
 % stop using spc.roipoly 201111 gy
 % if isfield(spc, 'roipoly')
